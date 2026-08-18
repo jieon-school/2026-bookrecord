@@ -141,170 +141,211 @@
         </div>
       </div>
 
-      <!-- 1. Student Information Form -->
-      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm">
-        <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
-          <i data-lucide="school" class="w-5 h-5 text-indigo-600"></i>
-          <h2 class="font-bold text-base sm:text-lg text-slate-900">1. 학생 기본 정보 입력</h2>
-          <span class="text-xs text-rose-500 font-medium ml-auto">* 필수 입력</span>
+      <!-- 1. Student Login Card (When NOT logged in) -->
+      <div id="student-login-card" class="max-w-xl mx-auto my-6 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl">
+        <div class="flex items-center gap-3 pb-4 mb-5 border-b border-slate-100">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg shadow-inner">
+            <i data-lucide="user-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">학생 로그인 (본인 확인)</h2>
+            <p class="text-xs text-slate-500">학적을 입력하면 내 독서기록을 작성하거나 이전에 제출한 내용을 확인·수정할 수 있습니다.</p>
+          </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
-              <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
-              학년도
-            </label>
-            <input type="text" value="2026학년도" disabled class="w-full px-3 py-2 text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-medium text-center cursor-not-allowed" />
-          </div>
+        <form onsubmit="handleStudentLogin(event)" class="space-y-4">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
+                <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+                학년도
+              </label>
+              <input type="text" value="2026학년도" disabled class="w-full px-3 py-2.5 text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-medium text-center cursor-not-allowed" />
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-              학년 <span class="text-rose-500">*</span>
-            </label>
-            <select id="student-grade" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
-              <option value="1">1학년</option>
-              <option value="2">2학년</option>
-              <option value="3">3학년</option>
-            </select>
-          </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                학년 <span class="text-rose-500">*</span>
+              </label>
+              <select id="login-student-grade" class="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="1">1학년</option>
+                <option value="2">2학년</option>
+                <option value="3">3학년</option>
+              </select>
+            </div>
 
-          <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-              반 <span class="text-rose-500">*</span>
-            </label>
-            <div class="relative">
-              <input type="number" id="student-class" min="1" max="20" placeholder="예: 3" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
-              <span class="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">반</span>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                반 <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="number" id="login-student-class" min="1" max="20" placeholder="예: 3" required class="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <span class="absolute right-3 top-2.5 text-xs text-slate-400 pointer-events-none">반</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+                번호 <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <input type="number" id="login-student-number" min="1" max="50" placeholder="예: 15" required class="w-full px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                <span class="absolute right-3 top-2.5 text-xs text-slate-400 pointer-events-none">번</span>
+              </div>
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
-              번호 <span class="text-rose-500">*</span>
-            </label>
-            <div class="relative">
-              <input type="number" id="student-number" min="1" max="50" placeholder="예: 15" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
-              <span class="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">번</span>
-            </div>
-          </div>
-
-          <div class="col-span-2 sm:col-span-1">
             <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
               <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
-              이름 <span class="text-rose-500">*</span>
+              학생 이름 <span class="text-rose-500">*</span>
             </label>
-            <input type="text" id="student-name" placeholder="홍길동" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+            <input type="text" id="login-student-name" placeholder="홍길동" required class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
           </div>
-        </div>
 
-        <!-- Mandatory Guidance Notice Box -->
-        <div class="mt-4 p-3.5 sm:p-4 rounded-xl bg-amber-50/90 border border-amber-200/80 flex items-start gap-2.5 sm:gap-3 text-xs sm:text-sm text-amber-900 leading-relaxed shadow-sm">
-          <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
-          <div>
-            <span class="font-bold text-amber-950 block sm:inline">⚠️ 독서기록 제출 안내: </span>
-            <span>
+          <!-- Notice Box -->
+          <div class="p-3.5 rounded-xl bg-amber-50/90 border border-amber-200/80 flex items-start gap-2.5 text-xs sm:text-sm text-amber-900 leading-relaxed">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+            <div>
+              <span class="font-bold text-amber-950">⚠️ 독서기록 제출 안내: </span>
               과목별 세부능력특기사항을 제외한 모든 영역의 독서 기록을 제출하세요. 과목별 세부능력특기사항에 기재된 도서는 해당 교과목 선생님께 제출하세요.
-            </span>
+            </div>
           </div>
-        </div>
+
+          <button
+            type="submit"
+            class="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/25 transition transform active:scale-95 flex items-center justify-center gap-2"
+          >
+            <i data-lucide="log-in" class="w-4 h-4"></i>
+            <span>내 독서활동기록 작성 / 제출내역 확인하기</span>
+          </button>
+        </form>
       </div>
 
-      <!-- 2. Manual Book Input & Live Verification -->
-      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm relative">
-        <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
-          <i data-lucide="book-open" class="w-5 h-5 text-indigo-600"></i>
-          <div>
-            <h2 class="font-bold text-base sm:text-lg text-slate-900">2. 도서 직접 입력 및 실시간 검증</h2>
-            <p class="text-xs text-slate-500">
-              도서명과 저자를 입력하면 실존 여부를 즉시 검증하고 표준 <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-semibold font-mono">도서명(저자)</code>으로 변환합니다.
-            </p>
+      <!-- 2. Student Workspace (When Logged in) -->
+      <div id="student-workspace" class="hidden space-y-6">
+        <!-- Logged-in Student Header Bar -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 border border-indigo-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-white via-indigo-50/30 to-purple-50/30">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-600/20">
+              <i data-lucide="user" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <span id="session-student-badge" class="font-black text-base sm:text-lg text-slate-900"></span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  2026학년도 독서활동
+                </span>
+              </div>
+              <p id="session-student-status-text" class="text-xs text-slate-500 mt-0.5"></p>
+            </div>
           </div>
+
+          <button
+            onclick="logoutStudent()"
+            class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-xl text-xs font-semibold transition border border-slate-200 self-start sm:self-auto"
+          >
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>학생 변경 / 로그아웃</span>
+          </button>
         </div>
 
-        <div class="relative">
-          <div class="flex flex-col sm:flex-row gap-2">
-            <div class="relative flex-1">
-              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <i data-lucide="search" class="w-4 h-4"></i>
+        <!-- Manual Book Input & Live Verification -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm relative">
+          <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+            <i data-lucide="book-open" class="w-5 h-5 text-indigo-600"></i>
+            <div>
+              <h2 class="font-bold text-base sm:text-lg text-slate-900">도서 직접 입력 및 실시간 검증</h2>
+              <p class="text-xs text-slate-500">
+                도서명과 저자를 입력하면 실존 여부를 즉시 검증하고 표준 <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-semibold font-mono">도서명(저자)</code>으로 변환합니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="relative">
+            <div class="flex flex-col sm:flex-row gap-2">
+              <div class="relative flex-1">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <i data-lucide="search" class="w-4 h-4"></i>
+                </div>
+                <input
+                  type="text"
+                  id="manual-book-input"
+                  placeholder="예: 데미안(헤르만 헤세) 또는 이기적 유전자"
+                  oninput="handleBookInput(this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault(); addManualBook();}"
+                  class="w-full pl-10 pr-10 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+                <div id="input-loading" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center">
+                  <i data-lucide="loader" class="w-4 h-4 text-indigo-600 animate-spin"></i>
+                </div>
               </div>
-              <input
-                type="text"
-                id="manual-book-input"
-                placeholder="예: 데미안(헤르만 헤세) 또는 이기적 유전자"
-                oninput="handleBookInput(this.value)"
-                onkeydown="if(event.key==='Enter'){event.preventDefault(); addManualBook();}"
-                class="w-full pl-10 pr-10 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-              />
-              <div id="input-loading" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center">
-                <i data-lucide="loader" class="w-4 h-4 text-indigo-600 animate-spin"></i>
-              </div>
+
+              <button
+                onclick="addManualBook()"
+                class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition"
+              >
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>도서 추가하기</span>
+              </button>
             </div>
 
-            <button
-              onclick="addManualBook()"
-              class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition"
-            >
-              <i data-lucide="plus" class="w-4 h-4"></i>
-              <span>도서 추가하기</span>
-            </button>
-          </div>
+            <!-- Real-time Verification / Correction Suggestion Banner -->
+            <div id="verification-banner" class="hidden mt-3"></div>
 
-          <!-- Real-time Verification / Correction Suggestion Banner -->
-          <div id="verification-banner" class="hidden mt-3"></div>
-
-          <!-- Autocomplete Dropdown -->
-          <div id="search-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-30 max-h-64 overflow-y-auto custom-scrollbar"></div>
-        </div>
-      </div>
-
-      <!-- 3. Registered Books List Table -->
-      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
-          <div class="flex items-center gap-2">
-            <i data-lucide="book-marked" class="w-5 h-5 text-indigo-600"></i>
-            <h2 class="font-bold text-base sm:text-lg text-slate-900">
-              3. 등록된 독서활동 목록 (<span id="book-count-text">0</span>권)
-            </h2>
-          </div>
-
-          <!-- NEIS Copy Buttons -->
-          <div id="copy-btn-group" class="hidden items-center gap-2 flex-wrap">
-            <button
-              onclick="copyNeisText('comma')"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
-            >
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-              <span>NEIS 쉼표(,) 구분 복사</span>
-            </button>
-            <button
-              onclick="copyNeisText('newline')"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
-            >
-              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-              <span>줄바꿈 복사</span>
-            </button>
+            <!-- Autocomplete Dropdown -->
+            <div id="search-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-30 max-h-64 overflow-y-auto custom-scrollbar"></div>
           </div>
         </div>
 
-        <!-- Table or Empty State -->
-        <div id="books-table-container">
-          <div class="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
-            <i data-lucide="book-marked" class="w-10 h-10 text-slate-300 mx-auto mb-2"></i>
-            <p class="text-sm font-semibold text-slate-700">아직 등록된 도서가 없습니다.</p>
-            <p class="text-xs text-slate-400 mt-1">위의 직접 입력창을 통해 책을 입력해 주세요.</p>
-          </div>
-        </div>
+        <!-- Registered Books List Table -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <i data-lucide="book-marked" class="w-5 h-5 text-indigo-600"></i>
+              <h2 class="font-bold text-base sm:text-lg text-slate-900">
+                등록된 독서활동 목록 (<span id="book-count-text">0</span>권)
+              </h2>
+            </div>
 
-        <!-- Submit Button -->
-        <div id="submit-section" class="hidden pt-4 flex justify-end">
-          <button
-            onclick="submitStudentRecord()"
-            class="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/25 transition transform active:scale-95"
-          >
-            <i data-lucide="send" class="w-4 h-4"></i>
-            <span>생기부 독서활동기록 최종 제출하기</span>
-          </button>
+            <!-- NEIS Copy Buttons -->
+            <div id="copy-btn-group" class="hidden items-center gap-2 flex-wrap">
+              <button
+                onclick="copyNeisText('comma')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+              >
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span>NEIS 쉼표(,) 구분 복사</span>
+              </button>
+              <button
+                onclick="copyNeisText('newline')"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+              >
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                <span>줄바꿈 복사</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Table or Empty State -->
+          <div id="books-table-container">
+            <div class="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+              <i data-lucide="book-marked" class="w-10 h-10 text-slate-300 mx-auto mb-2"></i>
+              <p class="text-sm font-semibold text-slate-700">아직 등록된 도서가 없습니다.</p>
+              <p class="text-xs text-slate-400 mt-1">위의 직접 입력창을 통해 책을 입력해 주세요.</p>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div id="submit-section" class="pt-4 flex justify-end">
+            <button
+              onclick="submitStudentRecord()"
+              class="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/25 transition transform active:scale-95"
+            >
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span id="submit-btn-text">생기부 독서활동기록 최종 제출하기</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -535,6 +576,10 @@
                 <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                 <span>새로고침</span>
               </button>
+              <button onclick="clearAllSubmissions()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-xl text-xs sm:text-sm font-semibold transition">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>목록 비우기 (초기화)</span>
+              </button>
             </div>
           </div>
 
@@ -666,6 +711,7 @@ function testPermission() {
     ];
 
     // Local State
+    let currentStudent = null;
     let studentBooks = [];
     let isAdminLoggedIn = false;
     let debounceTimer = null;
@@ -675,39 +721,13 @@ function testPermission() {
     function getStoredSubmissions() {
       const data = localStorage.getItem('book_record_submissions');
       if (!data) {
-        const seed = [
-          {
-            id: 'seed-1',
-            academicYear: '2026',
-            studentGrade: '1',
-            studentClass: '3',
-            studentNumber: '7',
-            studentName: '김민준',
-            books: [
-              { formattedString: '데미안(헤르만 헤세)', status: 'verified', publisher: '민음사' },
-              { formattedString: '침묵의 봄(레이첼 카슨)', status: 'verified', publisher: '에코리브르' }
-            ],
-            status: 'verified',
-            submittedAt: new Date().toISOString()
-          },
-          {
-            id: 'seed-2',
-            academicYear: '2026',
-            studentGrade: '1',
-            studentClass: '3',
-            studentNumber: '14',
-            studentName: '이서연',
-            books: [
-              { formattedString: '이기적 유전자(리처드 도킨스)', status: 'verified', publisher: '을유문화사' }
-            ],
-            status: 'verified',
-            submittedAt: new Date().toISOString()
-          }
-        ];
-        localStorage.setItem('book_record_submissions', JSON.stringify(seed));
-        return seed;
+        return [];
       }
-      return JSON.parse(data);
+      try {
+        return JSON.parse(data);
+      } catch (e) {
+        return [];
+      }
     }
 
     function saveSubmissions(list) {
@@ -986,36 +1006,110 @@ function testPermission() {
       });
     }
 
-    // Submit Record
-    async function submitStudentRecord() {
-      const grade = document.getElementById('student-grade').value;
-      const studentClass = document.getElementById('student-class').value.trim();
-      const studentNumber = document.getElementById('student-number').value.trim();
-      const studentName = document.getElementById('student-name').value.trim();
+    // Student Authentication & Session
+    function handleStudentLogin(e) {
+      if (e) e.preventDefault();
+      const grade = document.getElementById('login-student-grade').value;
+      const studentClass = document.getElementById('login-student-class').value.trim();
+      const studentNumber = document.getElementById('login-student-number').value.trim();
+      const studentName = document.getElementById('login-student-name').value.trim();
 
       if (!studentClass || !studentNumber || !studentName) {
-        showToast('학생 정보(반, 번호, 이름)를 모두 입력해 주세요.', 'error');
-        return;
-      }
-      if (studentBooks.length === 0) {
-        showToast('등록된 도서가 없습니다.', 'warning');
+        showToast('반, 번호, 이름을 모두 입력해 주세요.', 'warning');
         return;
       }
 
-      const newRecord = {
-        id: 'sub-' + Date.now(),
+      currentStudent = {
         academicYear: '2026',
         studentGrade: grade,
         studentClass: studentClass,
         studentNumber: studentNumber,
-        studentName: studentName,
-        books: studentBooks,
-        status: studentBooks.some(b => b.status !== 'verified') ? 'needs_review' : 'verified',
-        submittedAt: new Date().toISOString()
+        studentName: studentName
       };
 
+      // Check if student already submitted before
+      const records = getStoredSubmissions();
+      const existing = records.find(r =>
+        r.studentGrade === grade &&
+        r.studentClass === studentClass &&
+        r.studentNumber === studentNumber &&
+        r.studentName === studentName
+      );
+
+      const loginCard = document.getElementById('student-login-card');
+      const workspace = document.getElementById('student-workspace');
+      const badge = document.getElementById('session-student-badge');
+      const statusText = document.getElementById('session-student-status-text');
+      const submitBtnText = document.getElementById('submit-btn-text');
+
+      badge.innerText = `${grade}학년 ${studentClass}반 ${studentNumber}번 ${studentName} 학생`;
+
+      if (existing && existing.books && existing.books.length > 0) {
+        studentBooks = JSON.parse(JSON.stringify(existing.books));
+        statusText.innerHTML = `📄 <b class="text-indigo-700">이전에 제출한 기록(${existing.books.length}권)</b>을 불러왔습니다. 수정 후 다시 [최종 제출]을 누르면 업데이트됩니다.`;
+        submitBtnText.innerText = '생기부 독서활동기록 수정(업데이트) 제출하기';
+        showToast(`${studentName} 학생의 기존 제출 내역(${existing.books.length}권)을 불러왔습니다.`, 'info', 4000);
+      } else {
+        studentBooks = [];
+        statusText.innerHTML = '✨ <b class="text-emerald-700">신규 독서기록 작성</b> 중입니다. 도서를 입력한 후 제출해 주세요.';
+        submitBtnText.innerText = '생기부 독서활동기록 최종 제출하기';
+        showToast(`${studentName} 학생으로 접속했습니다.`, 'success');
+      }
+
+      loginCard.classList.add('hidden');
+      workspace.classList.remove('hidden');
+      renderStudentBooks();
+      lucide.createIcons();
+    }
+
+    function logoutStudent() {
+      currentStudent = null;
+      studentBooks = [];
+      document.getElementById('student-workspace').classList.add('hidden');
+      document.getElementById('student-login-card').classList.remove('hidden');
+      document.getElementById('manual-book-input').value = '';
+      document.getElementById('verification-banner').classList.add('hidden');
+      showToast('학생 로그아웃되었습니다.', 'info');
+      lucide.createIcons();
+    }
+
+    // Submit Record
+    async function submitStudentRecord() {
+      if (!currentStudent) {
+        showToast('학생 로그인이 필요합니다.', 'error');
+        return;
+      }
+      if (studentBooks.length === 0) {
+        showToast('등록된 도서가 없습니다. 도서를 1권 이상 입력해 주세요.', 'warning');
+        return;
+      }
+
       const list = getStoredSubmissions();
-      list.unshift(newRecord);
+      const existingIndex = list.findIndex(r =>
+        r.studentGrade === currentStudent.studentGrade &&
+        r.studentClass === currentStudent.studentClass &&
+        r.studentNumber === currentStudent.studentNumber &&
+        r.studentName === currentStudent.studentName
+      );
+
+      const recordToSave = {
+        id: existingIndex >= 0 ? list[existingIndex].id : ('sub-' + Date.now()),
+        academicYear: currentStudent.academicYear,
+        studentGrade: currentStudent.studentGrade,
+        studentClass: currentStudent.studentClass,
+        studentNumber: currentStudent.studentNumber,
+        studentName: currentStudent.studentName,
+        books: studentBooks,
+        status: studentBooks.some(b => b.status !== 'verified') ? 'needs_review' : 'verified',
+        submittedAt: new Date().toISOString(),
+        teacherComment: existingIndex >= 0 ? (list[existingIndex].teacherComment || '') : ''
+      };
+
+      if (existingIndex >= 0) {
+        list[existingIndex] = recordToSave;
+      } else {
+        list.unshift(recordToSave);
+      }
       saveSubmissions(list);
 
       // Google Sheet Real-time auto sync
@@ -1026,14 +1120,15 @@ function testPermission() {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'append_one', record: newRecord })
+          body: JSON.stringify({ action: 'sync_all', records: list })
         }).catch(e => console.warn('Webhook auto sync failed:', e));
       }
 
-      showToast(`🎉 ${studentName} 학생의 독서활동기록(${studentBooks.length}권)이 제출되었습니다!`, 'success', 5000);
-      studentBooks = [];
-      document.getElementById('student-number').value = '';
-      document.getElementById('student-name').value = '';
+      const statusText = document.getElementById('session-student-status-text');
+      statusText.innerHTML = `✅ <b class="text-emerald-700">제출(수정) 완료</b> (${studentBooks.length}권 / ${new Date().toLocaleTimeString('ko-KR')})`;
+      document.getElementById('submit-btn-text').innerText = '생기부 독서활동기록 수정(업데이트) 제출하기';
+
+      showToast(`🎉 ${currentStudent.studentName} 학생의 독서기록(${studentBooks.length}권)이 성공적으로 제출되었습니다!`, 'success', 5000);
       renderStudentBooks();
     }
 
@@ -1157,6 +1252,18 @@ function testPermission() {
       showToast('삭제 완료되었습니다.', 'info');
     }
 
+    function clearAllSubmissions() {
+      const records = getStoredSubmissions();
+      if (records.length === 0) {
+        showToast('삭제할 제출 기록이 없습니다.', 'info');
+        return;
+      }
+      if (!confirm(`현재 등록된 모든 학생 제출 기록(${records.length}건)을 완전히 삭제하시겠습니까?`)) return;
+      saveSubmissions([]);
+      renderTeacherDashboard();
+      showToast('모든 학생 제출 기록이 초기화되었습니다.', 'success');
+    }
+
     // Teacher Student Record Text & PDF Analysis
     async function analyzeTeacherText() {
       const text = document.getElementById('teacher-extract-text').value.trim();
@@ -1240,6 +1347,10 @@ function testPermission() {
     // Google Sheets Integration
     function saveSheetSettings() {
       const url = document.getElementById('sheet-webhook-url').value.trim();
+      if (!url) {
+        showToast('Webhook URL을 입력해 주세요.', 'warning');
+        return;
+      }
       localStorage.setItem('book_record_webhook_url', url);
       showToast('구글 시트 연동 URL이 저장되었습니다.', 'success');
     }
@@ -1250,11 +1361,13 @@ function testPermission() {
     }
 
     async function triggerSheetSync() {
-      const url = localStorage.getItem('book_record_webhook_url');
+      const inputUrl = document.getElementById('sheet-webhook-url').value.trim();
+      const url = inputUrl || localStorage.getItem('book_record_webhook_url');
       if (!url) {
         showToast('구글 시트 Webhook URL을 먼저 입력하세요.', 'warning');
         return;
       }
+      localStorage.setItem('book_record_webhook_url', url);
 
       const records = getStoredSubmissions();
       showToast('구글 시트로 동기화 중...', 'info');
@@ -1266,9 +1379,10 @@ function testPermission() {
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: 'sync_all', records: records })
         });
-        showToast('구글 스프레드시트에 동기화 요청을 전송했습니다!', 'success');
+        showToast('🎉 구글 스프레드시트에 성공적으로 동기화되었습니다!', 'success', 4000);
       } catch (e) {
-        showToast('동기화 실패: URL 및 배포 권한을 확인하세요.', 'error');
+        console.error(e);
+        showToast('동기화 실패: 네트워크 상태를 확인하세요.', 'error');
       }
     }
 
