@@ -105,17 +105,6 @@
             </button>
           </nav>
 
-          <!-- Kakao API Settings Button -->
-          <button
-            id="btn-kakao-settings"
-            onclick="openKakaoModal()"
-            class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-xl transition shadow-sm"
-            title="카카오 도서 검색 API 설정"
-          >
-            <i data-lucide="key" class="w-3.5 h-3.5 text-amber-600"></i>
-            <span id="kakao-key-status-text" class="hidden sm:inline">카카오 도서 API</span>
-          </button>
-
           <button
             id="btn-logout"
             onclick="logoutAdmin()"
@@ -263,15 +252,23 @@
 
         <!-- Manual Book Input & Live Instant Registration -->
         <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm relative">
-          <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
-            <div class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
-              <i data-lucide="book-open" class="w-5 h-5"></i>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                <i data-lucide="book-open" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h2 class="font-bold text-base sm:text-lg text-slate-900">도서 입력 (1단계 즉시 추가)</h2>
+                <p class="text-xs text-slate-500">
+                  도서명과 저자를 입력하고 <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono font-bold text-[11px]">Enter</kbd>를 누르면 생기부 표준 <code class="bg-indigo-50 text-indigo-700 font-bold font-mono px-1 py-0.5 rounded">도서명(저자)</code>으로 즉시 등록됩니다.
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 class="font-bold text-base sm:text-lg text-slate-900">도서 입력 (1단계 즉시 추가)</h2>
-              <p class="text-xs text-slate-500">
-                도서명과 저자를 입력하고 <kbd class="px-1.5 py-0.5 bg-slate-100 border border-slate-300 rounded text-slate-700 font-mono font-bold text-[11px]">Enter</kbd>를 누르면 생기부 표준 <code class="bg-indigo-50 text-indigo-700 font-bold font-mono px-1 py-0.5 rounded">도서명(저자)</code>으로 즉시 등록됩니다.
-              </p>
+
+            <!-- Student View: Read-only API Connection Status Badge -->
+            <div id="student-api-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm self-start sm:self-auto shrink-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="student-api-status-text">카카오 도서검색 실시간 연동됨</span>
             </div>
           </div>
 
@@ -562,6 +559,38 @@
                 <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
               </label>
             </div>
+          </div>
+        </div>
+
+        <!-- Kakao Book Search API Management Card (Teacher Only) -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-amber-50 text-amber-600">
+                <i data-lucide="key" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base sm:text-lg text-slate-900">카카오 도서 검색 API 설정 (관리자 전용)</h3>
+                <p class="text-xs text-slate-500">학생들에게 제공되는 실시간 다음(Daum) 도서 검색 REST API 키를 관리합니다.</p>
+              </div>
+            </div>
+            <button
+              onclick="openKakaoModal()"
+              class="inline-flex items-center gap-1.5 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs sm:text-sm font-semibold transition shadow-sm self-start sm:self-auto"
+            >
+              <i data-lucide="settings" class="w-4 h-4 text-amber-600"></i>
+              <span>API 키 설정 / 변경</span>
+            </button>
+          </div>
+          <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <div id="teacher-kakao-status-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <div>
+                <p class="text-xs font-bold text-slate-800" id="teacher-kakao-status-title">카카오 도서 검색 API 정상 연동 중</p>
+                <p class="text-[11px] text-slate-500">모든 학생이 별도 설정 없이 국내 출판 도서를 실시간 검색할 수 있습니다.</p>
+              </div>
+            </div>
+            <span id="teacher-kakao-badge" class="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg">연동 활성화</span>
           </div>
         </div>
 
@@ -1080,14 +1109,35 @@ function testPermission() {
 
     function updateKakaoKeyBadge() {
       const key = (localStorage.getItem('kakao_rest_api_key') || (typeof DEFAULT_KAKAO_REST_API_KEY !== 'undefined' ? DEFAULT_KAKAO_REST_API_KEY : '') || '').trim();
-      const badgeText = document.getElementById('kakao-key-status-text');
-      const btn = document.getElementById('btn-kakao-settings');
-      if (key) {
-        badgeText.innerText = '카카오 API (연동됨)';
-        btn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl transition shadow-sm';
-      } else {
-        badgeText.innerText = '카카오 도서 API';
-        btn.className = 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 rounded-xl transition shadow-sm';
+
+      // 1. Update Student live badge (Read-only status)
+      const studentBadge = document.getElementById('student-api-status-badge');
+      if (studentBadge) {
+        if (key) {
+          studentBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-sm self-start sm:self-auto shrink-0';
+          studentBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>카카오 도서검색 실시간 연동됨</span>';
+        } else {
+          studentBadge.className = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-50 text-slate-600 border border-slate-200 shadow-sm self-start sm:self-auto shrink-0';
+          studentBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span><span>기본 도서검색 모드</span>';
+        }
+      }
+
+      // 2. Update Teacher Dashboard status
+      const teacherDot = document.getElementById('teacher-kakao-status-dot');
+      const teacherTitle = document.getElementById('teacher-kakao-status-title');
+      const teacherBadge = document.getElementById('teacher-kakao-badge');
+      if (teacherTitle && teacherBadge) {
+        if (key) {
+          if (teacherDot) teacherDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse';
+          teacherTitle.innerText = '카카오 도서 검색 API 정상 연동 중';
+          teacherBadge.className = 'px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-lg';
+          teacherBadge.innerText = '연동 활성화';
+        } else {
+          if (teacherDot) teacherDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+          teacherTitle.innerText = '카카오 도서 검색 API 키 미등록 (기본 내장 DB 모드)';
+          teacherBadge.className = 'px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-lg';
+          teacherBadge.innerText = '키 미설정';
+        }
       }
       lucide.createIcons();
     }
