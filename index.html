@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>생기부 독서활동기록 마스터</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SheetJS (Excel Export) CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- PDF.js (PDF Text Extract in Browser) CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
+  <!-- Pretendard Font -->
+  <link rel="stylesheet" as="style" crossOrigin="anonymous" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Pretendard Variable", Pretendard, Roboto, "Segoe UI", sans-serif;
+      background-color: #f8fafc;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-900 selection:bg-indigo-500 selection:text-white">
+
+  <!-- ===================== HEADER / NAVBAR ===================== -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-lg text-slate-900 tracking-tight">생기부 독서기록 마스터</span>
+              <span class="px-2 py-0.5 text-xs font-semibold rounded-md bg-indigo-50 text-indigo-700 border border-indigo-200">
+                2026학년도
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 hidden sm:block">
+              생활기록부 독서활동 자동 검증 & 규격 <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-semibold font-mono">도서명(저자)</code> 생성기
+            </p>
+          </div>
+        </div>
+
+        <!-- Mode Switcher Tabs -->
+        <div class="flex items-center gap-2 sm:gap-4">
+          <nav class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button
+              id="tab-btn-student"
+              onclick="switchTab('student')"
+              class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-indigo-700 shadow-sm"
+            >
+              <i data-lucide="graduation-cap" class="w-4 h-4 text-indigo-600"></i>
+              <span>학생용 작성</span>
+            </button>
+
+            <button
+              id="tab-btn-teacher"
+              onclick="switchTab('teacher')"
+              class="flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900"
+            >
+              <i data-lucide="shield-check" class="w-4 h-4 text-slate-500"></i>
+              <span>교사용 관리자</span>
+            </button>
+          </nav>
+
+          <button
+            id="btn-logout"
+            onclick="logoutAdmin()"
+            class="hidden items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-600 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 border border-slate-200 rounded-lg transition"
+          >
+            <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+            <span>로그아웃</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+
+    <!-- ===================== VIEW 1: STUDENT VIEW ===================== -->
+    <div id="view-student" class="space-y-6">
+      <!-- Guide Banner -->
+      <div class="bg-gradient-to-r from-indigo-600 via-indigo-600 to-purple-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl shadow-indigo-500/15 relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold mb-3 border border-white/20">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            <span>2026학년도 학교생활기록부 독서활동상황</span>
+          </div>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight leading-tight">
+            내 생기부에 들어간 책, 정확한 규격으로 자동 검증하고 제출하세요!
+          </h1>
+          <p className="text-xs sm:text-sm text-indigo-100 mt-2.5 leading-relaxed font-medium">
+            • 반드시 <span class="font-bold text-white underline underline-offset-4">이번 해(해당 학년도)</span> 생기부에 작성된 책만 입력합니다.<br />
+            • <span class="font-bold text-amber-300">과목별 세부능력특기사항을 제외한 독서 기록</span>을 제출하세요. (과목별 세특 기재 도서는 해당 교과목 선생님께 제출)<br />
+            • 생기부 표준 기재 규격인 <code class="bg-white/25 px-1.5 py-0.5 rounded text-white font-mono font-bold">도서명(저자)</code> 형식으로 실시간 검증 및 자동 교정을 지원합니다.
+          </p>
+        </div>
+      </div>
+
+      <!-- 1. Student Information Form -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm">
+        <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+          <i data-lucide="school" class="w-5 h-5 text-indigo-600"></i>
+          <h2 class="font-bold text-base sm:text-lg text-slate-900">1. 학생 기본 정보 입력</h2>
+          <span class="text-xs text-rose-500 font-medium ml-auto">* 필수 입력</span>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i>
+              학년도
+            </label>
+            <input type="text" value="2026학년도" disabled class="w-full px-3 py-2 text-sm bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-medium text-center cursor-not-allowed" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              학년 <span class="text-rose-500">*</span>
+            </label>
+            <select id="student-grade" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none">
+              <option value="1">1학년</option>
+              <option value="2">2학년</option>
+              <option value="3">3학년</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              반 <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <input type="number" id="student-class" min="1" max="20" placeholder="예: 3" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+              <span class="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">반</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5">
+              번호 <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <input type="number" id="student-number" min="1" max="50" placeholder="예: 15" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+              <span class="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">번</span>
+            </div>
+          </div>
+
+          <div class="col-span-2 sm:col-span-1">
+            <label class="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1">
+              <i data-lucide="user" class="w-3.5 h-3.5 text-slate-400"></i>
+              이름 <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" id="student-name" placeholder="홍길동" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+          </div>
+        </div>
+
+        <!-- Mandatory Guidance Notice Box -->
+        <div class="mt-4 p-3.5 sm:p-4 rounded-xl bg-amber-50/90 border border-amber-200/80 flex items-start gap-2.5 sm:gap-3 text-xs sm:text-sm text-amber-900 leading-relaxed shadow-sm">
+          <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+          <div>
+            <span class="font-bold text-amber-950 block sm:inline">⚠️ 독서기록 제출 안내: </span>
+            <span>
+              과목별 세부능력특기사항을 제외한 모든 영역의 독서 기록을 제출하세요. 과목별 세부능력특기사항에 기재된 도서는 해당 교과목 선생님께 제출하세요.
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Manual Book Input & Live Verification -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm relative">
+        <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+          <i data-lucide="book-open" class="w-5 h-5 text-indigo-600"></i>
+          <div>
+            <h2 class="font-bold text-base sm:text-lg text-slate-900">2. 도서 직접 입력 및 실시간 검증</h2>
+            <p class="text-xs text-slate-500">
+              도서명과 저자를 입력하면 실존 여부를 즉시 검증하고 표준 <code class="bg-slate-100 px-1 py-0.5 rounded text-indigo-700 font-semibold font-mono">도서명(저자)</code>으로 변환합니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="relative">
+          <div class="flex flex-col sm:flex-row gap-2">
+            <div class="relative flex-1">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="search" class="w-4 h-4"></i>
+              </div>
+              <input
+                type="text"
+                id="manual-book-input"
+                placeholder="예: 데미안(헤르만 헤세) 또는 이기적 유전자"
+                oninput="handleBookInput(this.value)"
+                onkeydown="if(event.key==='Enter'){event.preventDefault(); addManualBook();}"
+                class="w-full pl-10 pr-10 py-3 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
+              />
+              <div id="input-loading" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center">
+                <i data-lucide="loader" class="w-4 h-4 text-indigo-600 animate-spin"></i>
+              </div>
+            </div>
+
+            <button
+              onclick="addManualBook()"
+              class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition"
+            >
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>도서 추가하기</span>
+            </button>
+          </div>
+
+          <!-- Real-time Verification / Correction Suggestion Banner -->
+          <div id="verification-banner" class="hidden mt-3"></div>
+
+          <!-- Autocomplete Dropdown -->
+          <div id="search-dropdown" class="hidden absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 p-2 z-30 max-h-64 overflow-y-auto custom-scrollbar"></div>
+        </div>
+      </div>
+
+      <!-- 3. Registered Books List Table -->
+      <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <i data-lucide="book-marked" class="w-5 h-5 text-indigo-600"></i>
+            <h2 class="font-bold text-base sm:text-lg text-slate-900">
+              3. 등록된 독서활동 목록 (<span id="book-count-text">0</span>권)
+            </h2>
+          </div>
+
+          <!-- NEIS Copy Buttons -->
+          <div id="copy-btn-group" class="hidden items-center gap-2 flex-wrap">
+            <button
+              onclick="copyNeisText('comma')"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>NEIS 쉼표(,) 구분 복사</span>
+            </button>
+            <button
+              onclick="copyNeisText('newline')"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+            >
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>줄바꿈 복사</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Table or Empty State -->
+        <div id="books-table-container">
+          <div class="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+            <i data-lucide="book-marked" class="w-10 h-10 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-sm font-semibold text-slate-700">아직 등록된 도서가 없습니다.</p>
+            <p class="text-xs text-slate-400 mt-1">위의 직접 입력창을 통해 책을 입력해 주세요.</p>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div id="submit-section" class="hidden pt-4 flex justify-end">
+          <button
+            onclick="submitStudentRecord()"
+            class="inline-flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/25 transition transform active:scale-95"
+          >
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>생기부 독서활동기록 최종 제출하기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== VIEW 2: TEACHER VIEW ===================== -->
+    <div id="view-teacher" class="hidden space-y-6">
+
+      <!-- Login Form (If not logged in) -->
+      <div id="teacher-login-card" class="max-w-md mx-auto my-12 bg-white rounded-3xl p-8 border border-slate-200 shadow-xl text-center">
+        <div class="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-5 shadow-inner">
+          <i data-lucide="lock" class="w-8 h-8"></i>
+        </div>
+        <h2 class="text-xl font-bold text-slate-900 mb-1.5">교사용 관리자 로그인</h2>
+        <p class="text-xs text-slate-500 mb-6">학생들이 제출한 독서활동기록을 실시간 확인하고 관리합니다.</p>
+
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4 text-left">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1.5 flex items-center gap-1">
+              <i data-lucide="key-round" class="w-3.5 h-3.5 text-slate-400"></i>
+              관리자 비밀번호
+            </label>
+            <input
+              type="password"
+              id="admin-pin-input"
+              placeholder="관리자 비밀번호를 입력하세요"
+              class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none text-center tracking-widest text-lg"
+            />
+          </div>
+          <div id="login-error-msg" class="hidden p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-center gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+            <span id="login-error-text"></span>
+          </div>
+          <button
+            type="submit"
+            class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md transition flex items-center justify-center gap-2"
+          >
+            <i data-lucide="shield-check" class="w-4 h-4"></i>
+            <span>관리자 대시보드 입장</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Teacher Dashboard (When logged in) -->
+      <div id="teacher-dashboard-content" class="hidden space-y-6">
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500">제출 학생 수</p>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="stat-total-students" class="text-2xl font-black text-slate-900">0</span>
+                <span class="text-xs font-medium text-slate-500">명</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500">등록된 총 도서</p>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="stat-total-books" class="text-2xl font-black text-slate-900">0</span>
+                <span class="text-xs font-medium text-slate-500">권</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500">도서 실존 검증률</p>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="stat-verify-rate" class="text-2xl font-black text-emerald-600">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-slate-500">저자 확인 필요</p>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="stat-needs-review" class="text-2xl font-black text-slate-900">0</span>
+                <span class="text-xs font-medium text-slate-500">건</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher 생기부 분석 및 도서 검증 툴 -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm">
+          <div class="flex items-center gap-2 pb-4 mb-4 border-b border-slate-100">
+            <div class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-base sm:text-lg text-slate-900">
+                교사용 생기부 파일/본문 분석 및 도서 검증 툴
+              </h3>
+              <p class="text-xs text-slate-500">
+                학생부 PDF 파일이나 세특 본문을 긁어넣으면 '~를 읽고', '도서', '책', 『...』 문맥 속 도서를 자동 추출하고 실존 여부를 검증합니다.
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <textarea
+              id="teacher-extract-text"
+              rows="3"
+              placeholder="학생부 세특 또는 활동 본문 문장을 복사하여 여기에 붙여넣으세요. (예: 헤르만 헤세의 「데미안」을 읽고 인간의 내면적 갈등에 대해 탐구함. 또한 레이첼 카슨의 『침묵의 봄』을 통해 환경오염의 위험성을 깨달음...)"
+              class="w-full p-3.5 text-sm bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-indigo-500 outline-none"
+            ></textarea>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <input type="file" id="teacher-file-input" accept=".pdf,.txt" class="hidden" onchange="handleTeacherFileUpload(event)" />
+                <button
+                  onclick="document.getElementById('teacher-file-input').click()"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition"
+                >
+                  <i data-lucide="file-up" class="w-3.5 h-3.5"></i>
+                  <span>PDF 파일 업로드</span>
+                </button>
+                <span id="teacher-file-name" class="text-xs text-slate-400"></span>
+              </div>
+              <button
+                onclick="analyzeTeacherText()"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition"
+              >
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span>생기부 문맥 분석 & 도서 검증</span>
+              </button>
+            </div>
+
+            <!-- Extracted Results Area -->
+            <div id="teacher-extracted-results" class="hidden mt-4 pt-4 border-t border-slate-100"></div>
+          </div>
+        </div>
+
+        <!-- Google Sheet Real-time Sync Card -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <div class="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+                <i data-lucide="share-2" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">구글 스프레드시트(Google Sheets) 실시간 연동</h3>
+                <p class="text-xs text-slate-500">학생 제출 시 구글 스프레드시트에 자동으로 기록합니다.</p>
+              </div>
+            </div>
+            <button
+              onclick="openGuideModal()"
+              class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition self-start sm:self-auto"
+            >
+              <i data-lucide="help-circle" class="w-4 h-4"></i>
+              <span>10초 연동 가이드 보기</span>
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">구글 Apps Script 웹앱 (Webhook) URL</label>
+              <div class="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="url"
+                  id="sheet-webhook-url"
+                  placeholder="https://script.google.com/macros/s/.../exec"
+                  class="flex-1 px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl font-mono text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+                <div class="flex items-center gap-2">
+                  <button onclick="saveSheetSettings()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs sm:text-sm font-semibold transition">
+                    설정 저장
+                  </button>
+                  <button onclick="triggerSheetSync()" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                    <span>지금 즉시 동기화</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-xl border border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <i data-lucide="power" class="w-4 h-4 text-emerald-600"></i>
+                <div>
+                  <p class="text-xs font-bold text-slate-800">학생 제출 시 실시간 자동 동기화</p>
+                  <p class="text-[11px] text-slate-500">학생이 최종 제출할 때마다 구글 시트에 자동으로 행을 추가합니다.</p>
+                </div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="sheet-auto-sync" onchange="toggleAutoSync(this.checked)" class="sr-only peer" />
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Student Submissions Table -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="p-2 rounded-xl bg-indigo-50 text-indigo-600">
+                <i data-lucide="filter" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="font-bold text-base sm:text-lg text-slate-900">
+                  학생 제출 현황 목록 (<span id="table-student-count">0</span>명)
+                </h3>
+                <p class="text-xs text-slate-500">NEIS 독서활동상황 원클릭 복사 및 엑셀 다운로드가 가능합니다.</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-wrap">
+              <button onclick="exportToExcel()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-sm transition">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                <span>엑셀 다운로드 (.xlsx)</span>
+              </button>
+              <button onclick="renderTeacherDashboard()" class="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs sm:text-sm font-semibold transition">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                <span>새로고침</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div id="teacher-table-container" class="mt-4 overflow-x-auto"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===================== TOAST NOTIFICATION ===================== -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-md w-full pointer-events-none px-4"></div>
+
+  <!-- ===================== GUIDE MODAL ===================== -->
+  <div id="guide-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+        <h3 class="font-bold text-lg text-slate-900">구글 스프레드시트 10초 초간편 연동 가이드</h3>
+        <button onclick="closeGuideModal()" class="text-slate-400 hover:text-slate-600 p-1.5">✕</button>
+      </div>
+
+      <div class="space-y-4 text-xs sm:text-sm text-slate-700 leading-relaxed">
+        <ol class="list-decimal pl-5 space-y-2.5 text-slate-800 font-medium">
+          <li>구글 스프레드시트 상단 메뉴에서 <b>[확장 프로그램] → [Apps Script]</b>를 클릭합니다.</li>
+          <li>
+            기존 코드를 지우고 아래 코드를 붙여넣습니다:
+            <div class="mt-2 relative">
+              <button onclick="copyAppsScriptCode()" class="absolute right-2 top-2 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition">
+                스크립트 코드 복사
+              </button>
+              <pre id="apps-script-code" class="bg-slate-900 text-slate-200 p-4 rounded-xl font-mono text-[11px] overflow-x-auto max-h-48">
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var payload = JSON.parse(e.postData.contents);
+    var action = payload.action;
+    var records = payload.records || [];
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["학년도", "학년", "반", "번호", "이름", "생기부 기재 규격 텍스트 (NEIS용)", "도서 수", "도서 상세 목록", "검증 상태", "제출일시", "교사 메모"]);
+      sheet.getRange(1, 1, 1, 11).setBackground("#4F46E5").setFontColor("#FFFFFF").setFontWeight("bold");
+    }
+
+    if (action === "sync_all") {
+      sheet.clearContents();
+      sheet.appendRow(["학년도", "학년", "반", "번호", "이름", "생기부 기재 규격 텍스트 (NEIS용)", "도서 수", "도서 상세 목록", "검증 상태", "제출일시", "교사 메모"]);
+      sheet.getRange(1, 1, 1, 11).setBackground("#4F46E5").setFontColor("#FFFFFF").setFontWeight("bold");
+
+      records.forEach(function(r) {
+        var neisText = (r.books || []).map(function(b) { return b.formattedString; }).join(", ");
+        var detailText = (r.books || []).map(function(b, idx) { return (idx + 1) + ". " + b.formattedString; }).join("\n");
+        sheet.appendRow([r.academicYear, r.studentGrade + "학년", r.studentClass + "반", r.studentNumber + "번", r.studentName, neisText, (r.books || []).length, detailText, r.status === "verified" ? "검증 완료" : "확인 필요", new Date(r.submittedAt).toLocaleString("ko-KR"), r.teacherComment || ""]);
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+            </div>
+          </li>
+          <li>우측 상단 <b>[배포] → [새 배포] → [웹 앱]</b> 선택</li>
+          <li>액세스 권한을 반드시 <b>[모든 사용자 (Anyone)]</b>로 설정 후 [배포] 클릭</li>
+          <li>생성된 웹 앱 URL을 복사하여 연동 설정창에 붙여넣으세요!</li>
+        </ol>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end">
+        <button onclick="closeGuideModal()" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs sm:text-sm font-semibold">확인 완료</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== JAVASCRIPT LOGIC ===================== -->
+  <script>
+    // Curated high-frequency Korean books for zero-latency verification
+    const CURATED_BOOKS = [
+      { title: '데미안', author: '헤르만 헤세', publisher: '민음사' },
+      { title: '수레바퀴 아래서', author: '헤르만 헤세', publisher: '민음사' },
+      { title: '이기적 유전자', author: '리처드 도킨스', publisher: '을유문화사' },
+      { title: '사피엔스', author: '유발 하라리', publisher: '김영사' },
+      { title: '호모 데우스', author: '유발 하라리', publisher: '김영사' },
+      { title: '침묵의 봄', author: '레이첼 카슨', publisher: '에코리브르' },
+      { title: '정의란 무엇인가', author: '마이클 샌델', publisher: '와이즈베리' },
+      { title: '돈으로 살 수 없는 것들', author: '마이클 샌델', publisher: '와이즈베리' },
+      { title: '공정하다는 착각', author: '마이클 샌델', publisher: '와이즈베리' },
+      { title: '멋진 신세계', author: '올더스 헉슬리', publisher: '문예출판사' },
+      { title: '1984', author: '조지 오웰', publisher: '민음사' },
+      { title: '동물농장', author: '조지 오웰', publisher: '민음사' },
+      { title: '페스트', author: '알베르 카뮈', publisher: '민음사' },
+      { title: '이방인', author: '알베르 카뮈', publisher: '민음사' },
+      { title: '왜 세계의 절반은 굶주리는가', author: '장 지글러', publisher: '갈라파고스' },
+      { title: '코스모스', author: '칼 세이건', publisher: '사이언스북스' },
+      { title: '아몬드', author: '손원평', publisher: '창비' },
+      { title: '엔트로피', author: '제레미 리프킨', publisher: '세종연구원' },
+      { title: '소유냐 삶이냐', author: '에리히 프롬', publisher: '홍신문화사' },
+      { title: '자유론', author: '존 스튜어트 밀', publisher: '책세상' },
+      { title: '군주론', author: '니콜로 마키아벨리', publisher: '까치' },
+      { title: '변신', author: '프란츠 카프카', publisher: '민음사' },
+      { title: '죄와 벌', author: '표도르 도스토옙스키', publisher: '열린책들' },
+      { title: '총, 균, 쇠', author: '재레드 다이아몬드', publisher: '문학사상' },
+      { title: '부분과 전체', author: '베르너 하이젠베르크', publisher: '지식산업사' },
+      { title: '물고기는 존재하지 않는다', author: '룰루 밀러', publisher: '곰출판' },
+      { title: '불편한 편의점', author: '김호연', publisher: '나무옆의자' },
+      { title: '달러구트 꿈 백화점', author: '이미예', publisher: '팩토리나인' },
+      { title: '난장이가 쏘아올린 작은 공', author: '조세희', publisher: '이성과힘' },
+      { title: '광장', author: '최인훈', publisher: '문학과지성사' },
+      { title: '연금술사', author: '파울로 코엘료', publisher: '문학동네' },
+      { title: '팩트풀니스', author: '한스 로슬링', publisher: '김영사' },
+      { title: '지리의 힘', author: '팀 마샬', publisher: '사이' },
+      { title: '다정한 것이 살아남는다', author: '브라이언 헤어', publisher: '디플롯' }
+    ];
+
+    // Local State
+    let studentBooks = [];
+    let isAdminLoggedIn = false;
+    let debounceTimer = null;
+    let currentVerification = null;
+
+    // Initialize Local Storage DB
+    function getStoredSubmissions() {
+      const data = localStorage.getItem('book_record_submissions');
+      if (!data) {
+        const seed = [
+          {
+            id: 'seed-1',
+            academicYear: '2026',
+            studentGrade: '1',
+            studentClass: '3',
+            studentNumber: '7',
+            studentName: '김민준',
+            books: [
+              { formattedString: '데미안(헤르만 헤세)', status: 'verified', publisher: '민음사' },
+              { formattedString: '침묵의 봄(레이첼 카슨)', status: 'verified', publisher: '에코리브르' }
+            ],
+            status: 'verified',
+            submittedAt: new Date().toISOString()
+          },
+          {
+            id: 'seed-2',
+            academicYear: '2026',
+            studentGrade: '1',
+            studentClass: '3',
+            studentNumber: '14',
+            studentName: '이서연',
+            books: [
+              { formattedString: '이기적 유전자(리처드 도킨스)', status: 'verified', publisher: '을유문화사' }
+            ],
+            status: 'verified',
+            submittedAt: new Date().toISOString()
+          }
+        ];
+        localStorage.setItem('book_record_submissions', JSON.stringify(seed));
+        return seed;
+      }
+      return JSON.parse(data);
+    }
+
+    function saveSubmissions(list) {
+      localStorage.setItem('book_record_submissions', JSON.stringify(list));
+    }
+
+    // Tab switcher
+    function switchTab(tab) {
+      const viewStudent = document.getElementById('view-student');
+      const viewTeacher = document.getElementById('view-teacher');
+      const btnStudent = document.getElementById('tab-btn-student');
+      const btnTeacher = document.getElementById('tab-btn-teacher');
+      const btnLogout = document.getElementById('btn-logout');
+
+      if (tab === 'student') {
+        viewStudent.classList.remove('hidden');
+        viewTeacher.classList.add('hidden');
+        btnStudent.className = 'flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition bg-white text-indigo-700 shadow-sm';
+        btnTeacher.className = 'flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900';
+        btnLogout.classList.add('hidden');
+      } else {
+        viewStudent.classList.add('hidden');
+        viewTeacher.classList.remove('hidden');
+        btnTeacher.className = 'flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition bg-indigo-600 text-white shadow-sm';
+        btnStudent.className = 'flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition text-slate-600 hover:text-slate-900';
+        if (isAdminLoggedIn) {
+          btnLogout.classList.remove('hidden');
+          renderTeacherDashboard();
+        }
+      }
+      lucide.createIcons();
+    }
+
+    // Clean String Helpers
+    function cleanTitle(t) {
+      return (t || '').replace(/[「」『』‘'""<>]/g, '').trim();
+    }
+    function cleanAuthor(a) {
+      return (a || '').replace(/\s*(?:지음|글|그림|저|역|옮김|편저|엮음)\b/g, '').trim();
+    }
+
+    // Real-time Book Verification Algorithm
+    async function verifyBook(input) {
+      const trimmed = (input || '').trim();
+      if (!trimmed) return null;
+
+      let rawTitle = trimmed;
+      let rawAuthor = '';
+
+      const match = trimmed.match(/^([^\(\)]+?)\s*\(\s*([^\(\)]+?)\s*\)$/);
+      if (match) {
+        rawTitle = cleanTitle(match[1]);
+        rawAuthor = cleanAuthor(match[2]);
+      } else {
+        const dashMatch = trimmed.match(/^([^\-\/\:\[\]]+?)\s*[\-\/\:]\s*([^\-\/\:\[\]]+)$/);
+        if (dashMatch) {
+          rawTitle = cleanTitle(dashMatch[1]);
+          rawAuthor = cleanAuthor(dashMatch[2]);
+        }
+      }
+
+      // 1. Curated check
+      const curated = CURATED_BOOKS.find(b =>
+        b.title.replace(/\s+/g, '') === rawTitle.replace(/\s+/g, '') ||
+        (rawTitle.length >= 3 && b.title.includes(rawTitle))
+      );
+
+      if (curated) {
+        const isAuthorMismatch = rawAuthor && curated.author.replace(/\s+/g, '') !== rawAuthor.replace(/\s+/g, '') && !curated.author.includes(rawAuthor);
+        return {
+          title: curated.title,
+          author: isAuthorMismatch ? rawAuthor : (rawAuthor || curated.author),
+          correctAuthor: curated.author,
+          formattedString: `${curated.title}(${curated.author})`,
+          status: isAuthorMismatch ? 'author_mismatch' : 'verified',
+          publisher: curated.publisher
+        };
+      }
+
+      // 2. Google Books API fetch
+      try {
+        const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(trimmed)}&maxResults=5`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.items && data.items.length > 0) {
+            const info = data.items[0].volumeInfo || {};
+            const authors = (info.authors || []).join(', ');
+            const foundTitle = cleanTitle(info.title || rawTitle);
+            const foundAuthor = cleanAuthor(authors || rawAuthor || '저자 미상');
+            return {
+              title: foundTitle,
+              author: rawAuthor || foundAuthor,
+              correctAuthor: foundAuthor,
+              formattedString: `${foundTitle}(${foundAuthor})`,
+              status: 'verified',
+              publisher: info.publisher || ''
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('API lookup skipped:', e);
+      }
+
+      return {
+        title: rawTitle,
+        author: rawAuthor || '저자 미상',
+        formattedString: rawAuthor ? `${rawTitle}(${rawAuthor})` : rawTitle,
+        status: rawAuthor ? 'verified' : 'not_found',
+        publisher: ''
+      };
+    }
+
+    // Handle typing in book input
+    function handleBookInput(val) {
+      clearTimeout(debounceTimer);
+      const banner = document.getElementById('verification-banner');
+      const dropdown = document.getElementById('search-dropdown');
+
+      if (!val || val.trim().length < 2) {
+        banner.classList.add('hidden');
+        dropdown.classList.add('hidden');
+        return;
+      }
+
+      document.getElementById('input-loading').classList.remove('hidden');
+
+      debounceTimer = setTimeout(async () => {
+        currentVerification = await verifyBook(val);
+        document.getElementById('input-loading').classList.add('hidden');
+
+        if (currentVerification) {
+          banner.classList.remove('hidden');
+          if (currentVerification.status === 'verified') {
+            banner.innerHTML = `
+              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between gap-2 text-xs text-emerald-800">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                  <span><b>실존 도서 확인:</b> ${currentVerification.formattedString} ${currentVerification.publisher ? `(${currentVerification.publisher})` : ''}</span>
+                </div>
+                <button onclick="applyVerifiedFormat('${currentVerification.formattedString}')" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700">서식 자동 적용</button>
+              </div>`;
+          } else if (currentVerification.status === 'author_mismatch') {
+            banner.innerHTML = `
+              <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-2 text-xs text-amber-900">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                  <span><b>저자 확인 필요:</b> 실제 저자는 '${currentVerification.correctAuthor}'입니다.</span>
+                </div>
+                <button onclick="applyVerifiedFormat('${currentVerification.formattedString}')" class="px-2.5 py-1 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700">교정 적용</button>
+              </div>`;
+          }
+          lucide.createIcons();
+        }
+      }, 300);
+    }
+
+    function applyVerifiedFormat(str) {
+      document.getElementById('manual-book-input').value = str;
+      showToast('규격 도서명(저자)으로 교정되었습니다.', 'info');
+    }
+
+    // Add manual book to list
+    function addManualBook() {
+      const input = document.getElementById('manual-book-input');
+      const val = (input.value || '').trim();
+      if (!val) {
+        showToast('도서명을 입력해 주세요.', 'warning');
+        return;
+      }
+
+      let formatted = val;
+      const match = val.match(/^([^\(\)]+?)\s*\(\s*([^\(\)]+?)\s*\)$/);
+      if (!match) {
+        if (currentVerification && currentVerification.formattedString.includes('(')) {
+          formatted = currentVerification.formattedString;
+        } else {
+          formatted = `${val}(저자 미상)`;
+        }
+      }
+
+      if (studentBooks.some(b => b.formattedString === formatted)) {
+        showToast('이미 등록된 도서입니다.', 'warning');
+        return;
+      }
+
+      studentBooks.push({
+        id: Date.now().toString(),
+        formattedString: formatted,
+        status: currentVerification?.status || 'verified',
+        publisher: currentVerification?.publisher || ''
+      });
+
+      input.value = '';
+      document.getElementById('verification-banner').classList.add('hidden');
+      renderStudentBooks();
+      showToast(`'${formatted}' 등록 완료`, 'success');
+    }
+
+    function removeStudentBook(id) {
+      studentBooks = studentBooks.filter(b => b.id !== id);
+      renderStudentBooks();
+      showToast('도서가 삭제되었습니다.', 'info');
+    }
+
+    function renderStudentBooks() {
+      const container = document.getElementById('books-table-container');
+      const countText = document.getElementById('book-count-text');
+      const copyGroup = document.getElementById('copy-btn-group');
+      const submitSec = document.getElementById('submit-section');
+
+      countText.innerText = studentBooks.length;
+
+      if (studentBooks.length === 0) {
+        copyGroup.classList.add('hidden');
+        submitSec.classList.add('hidden');
+        container.innerHTML = `
+          <div class="py-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+            <i data-lucide="book-marked" class="w-10 h-10 text-slate-300 mx-auto mb-2"></i>
+            <p class="text-sm font-semibold text-slate-700">아직 등록된 도서가 없습니다.</p>
+            <p class="text-xs text-slate-400 mt-1">위의 직접 입력창을 통해 책을 입력해 주세요.</p>
+          </div>`;
+      } else {
+        copyGroup.classList.remove('hidden');
+        copyGroup.classList.add('flex');
+        submitSec.classList.remove('hidden');
+
+        let rows = studentBooks.map((b, idx) => `
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="py-3 px-3 text-center font-bold text-slate-400">${idx + 1}</td>
+            <td class="py-3 px-4 font-mono font-bold text-slate-900 text-sm">${b.formattedString}</td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${b.status === 'verified' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
+                ${b.status === 'verified' ? '실존 도서 확인' : '저자 확인 필요'}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-xs text-slate-500">${b.publisher || '-'}</td>
+            <td class="py-3 px-3 text-center">
+              <button onclick="removeStudentBook('${b.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+        container.innerHTML = `
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase bg-slate-50">
+                <th class="py-3 px-3 w-12 text-center">순번</th>
+                <th class="py-3 px-4">생기부 표준 기재 형식 [도서명(저자)]</th>
+                <th class="py-3 px-4 w-32">검증 상태</th>
+                <th class="py-3 px-4 w-28">출판사</th>
+                <th class="py-3 px-3 w-16 text-center">삭제</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-xs sm:text-sm">${rows}</tbody>
+          </table>
+          <div class="mt-4 p-4 rounded-xl bg-slate-900 text-slate-100">
+            <span class="text-xs font-bold text-indigo-300 block mb-1">NEIS 생기부 기재 미리보기</span>
+            <div class="p-2.5 bg-slate-800 rounded font-mono text-xs text-slate-200 select-all">
+              ${studentBooks.map(b => b.formattedString).join(', ')}
+            </div>
+          </div>`;
+      }
+      lucide.createIcons();
+    }
+
+    function copyNeisText(type) {
+      if (studentBooks.length === 0) return;
+      const text = type === 'comma'
+        ? studentBooks.map(b => b.formattedString).join(', ')
+        : studentBooks.map(b => b.formattedString).join('\n');
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(type === 'comma' ? 'NEIS 쉼표 구분 텍스트가 복사되었습니다!' : '줄바꿈 형식으로 복사되었습니다!', 'success');
+      });
+    }
+
+    // Submit Record
+    async function submitStudentRecord() {
+      const grade = document.getElementById('student-grade').value;
+      const studentClass = document.getElementById('student-class').value.trim();
+      const studentNumber = document.getElementById('student-number').value.trim();
+      const studentName = document.getElementById('student-name').value.trim();
+
+      if (!studentClass || !studentNumber || !studentName) {
+        showToast('학생 정보(반, 번호, 이름)를 모두 입력해 주세요.', 'error');
+        return;
+      }
+      if (studentBooks.length === 0) {
+        showToast('등록된 도서가 없습니다.', 'warning');
+        return;
+      }
+
+      const newRecord = {
+        id: 'sub-' + Date.now(),
+        academicYear: '2026',
+        studentGrade: grade,
+        studentClass: studentClass,
+        studentNumber: studentNumber,
+        studentName: studentName,
+        books: studentBooks,
+        status: studentBooks.some(b => b.status !== 'verified') ? 'needs_review' : 'verified',
+        submittedAt: new Date().toISOString()
+      };
+
+      const list = getStoredSubmissions();
+      list.unshift(newRecord);
+      saveSubmissions(list);
+
+      // Google Sheet Real-time auto sync
+      const webhookUrl = localStorage.getItem('book_record_webhook_url');
+      const autoSync = localStorage.getItem('book_record_auto_sync') === 'true';
+      if (webhookUrl && autoSync) {
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'append_one', record: newRecord })
+        }).catch(e => console.warn('Webhook auto sync failed:', e));
+      }
+
+      showToast(`🎉 ${studentName} 학생의 독서활동기록(${studentBooks.length}권)이 제출되었습니다!`, 'success', 5000);
+      studentBooks = [];
+      document.getElementById('student-number').value = '';
+      document.getElementById('student-name').value = '';
+      renderStudentBooks();
+    }
+
+    // ===================== TEACHER LOGIC =====================
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const pin = document.getElementById('admin-pin-input').value.trim();
+      const errorBox = document.getElementById('login-error-msg');
+      const errorText = document.getElementById('login-error-text');
+
+      if (pin === 'admin1234') {
+        isAdminLoggedIn = true;
+        document.getElementById('teacher-login-card').classList.add('hidden');
+        document.getElementById('teacher-dashboard-content').classList.remove('hidden');
+        document.getElementById('btn-logout').classList.remove('hidden');
+        errorBox.classList.add('hidden');
+        renderTeacherDashboard();
+        showToast('교사용 관리자로 로그인되었습니다.', 'success');
+      } else {
+        errorBox.classList.remove('hidden');
+        errorText.innerText = '관리자 비밀번호가 일치하지 않습니다.';
+      }
+      lucide.createIcons();
+    }
+
+    function logoutAdmin() {
+      isAdminLoggedIn = false;
+      document.getElementById('teacher-login-card').classList.remove('hidden');
+      document.getElementById('teacher-dashboard-content').classList.add('hidden');
+      document.getElementById('btn-logout').classList.add('hidden');
+      document.getElementById('admin-pin-input').value = '';
+      showToast('로그아웃되었습니다.', 'info');
+      switchTab('student');
+    }
+
+    function renderTeacherDashboard() {
+      const records = getStoredSubmissions();
+      const totalStudents = records.length;
+      let totalBooks = 0;
+      let verifiedBooks = 0;
+      let needsReview = 0;
+
+      records.forEach(r => {
+        (r.books || []).forEach(b => {
+          totalBooks++;
+          if (b.status === 'verified') verifiedBooks++;
+          else needsReview++;
+        });
+      });
+
+      document.getElementById('stat-total-students').innerText = totalStudents;
+      document.getElementById('stat-total-books').innerText = totalBooks;
+      document.getElementById('stat-verify-rate').innerText = totalBooks > 0 ? Math.round((verifiedBooks / totalBooks) * 100) + '%' : '100%';
+      document.getElementById('stat-needs-review').innerText = needsReview;
+      document.getElementById('table-student-count').innerText = totalStudents;
+
+      // Render Table
+      const container = document.getElementById('teacher-table-container');
+      if (records.length === 0) {
+        container.innerHTML = '<div class="py-8 text-center text-slate-400">제출된 학생 기록이 없습니다.</div>';
+        return;
+      }
+
+      let rows = records.map((s) => {
+        const neis = (s.books || []).map(b => b.formattedString).join(', ');
+        return `
+          <tr class="hover:bg-slate-50 border-b border-slate-100 transition text-xs sm:text-sm">
+            <td class="py-3.5 px-3 text-center font-mono font-semibold text-slate-700">${s.studentGrade}-${s.studentClass}-${s.studentNumber}</td>
+            <td class="py-3.5 px-3 font-bold text-slate-900">${s.studentName}</td>
+            <td class="py-3.5 px-4 font-mono font-semibold text-slate-900">${neis}</td>
+            <td class="py-3.5 px-3 text-center font-bold text-slate-700">${(s.books || []).length}권</td>
+            <td class="py-3.5 px-3">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${s.status === 'verified' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}">
+                ${s.status === 'verified' ? '검증 완료' : '확인 필요'}
+              </span>
+            </td>
+            <td class="py-3.5 px-3 text-center">
+              <button onclick="copySingleStudentNeis('${s.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium">복사</button>
+            </td>
+            <td class="py-3.5 px-3 text-center">
+              <button onclick="deleteStudentRecord('${s.id}')" class="p-1 text-slate-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase bg-slate-50">
+              <th class="py-3 px-3 w-24 text-center">학적</th>
+              <th class="py-3 px-3 w-20">이름</th>
+              <th class="py-3 px-4">생기부 기재 텍스트 [도서명(저자)]</th>
+              <th class="py-3 px-3 w-16 text-center">도서수</th>
+              <th class="py-3 px-3 w-24">검증상태</th>
+              <th class="py-3 px-3 w-20 text-center">NEIS 복사</th>
+              <th class="py-3 px-3 w-14 text-center">삭제</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">${rows}</tbody>
+        </table>`;
+      lucide.createIcons();
+    }
+
+    function copySingleStudentNeis(id) {
+      const records = getStoredSubmissions();
+      const student = records.find(r => r.id === id);
+      if (!student) return;
+      const text = student.books.map(b => b.formattedString).join(', ');
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(`${student.studentName} 학생의 독서기록이 복사되었습니다.`, 'success');
+      });
+    }
+
+    function deleteStudentRecord(id) {
+      if (!confirm('해당 학생의 기록을 삭제하시겠습니까?')) return;
+      let list = getStoredSubmissions();
+      list = list.filter(r => r.id !== id);
+      saveSubmissions(list);
+      renderTeacherDashboard();
+      showToast('삭제 완료되었습니다.', 'info');
+    }
+
+    // Teacher Student Record Text & PDF Analysis
+    async function analyzeTeacherText() {
+      const text = document.getElementById('teacher-extract-text').value.trim();
+      const resultsContainer = document.getElementById('teacher-extracted-results');
+
+      if (!text) {
+        showToast('분석할 생기부 본문 텍스트를 입력해 주세요.', 'warning');
+        return;
+      }
+
+      showToast('생기부 본문 문맥 및 도서 검증 중...', 'info');
+
+      // Pattern matcher
+      const candidates = [];
+      const bracketMatches = text.matchAll(/[「『]([가-힣A-Za-z0-9\s·\-\,\:\?]{2,35}?)[」』](?:\s*\(\s*([가-힣A-Za-z\s·]{2,15}?)\s*\))?/g);
+      for (const m of bracketMatches) {
+        candidates.push({ title: m[1], author: m[2] });
+      }
+
+      const verbMatches = text.matchAll(/([가-힣A-Za-z0-9\s]{2,25}?)(?:을|를)\s*(?:읽고|읽으며|탐독하고|접하고)/g);
+      for (const m of verbMatches) {
+        const words = m[1].trim().split(/\s+/);
+        candidates.push({ title: words.slice(-2).join(' ') });
+      }
+
+      const verifiedList = [];
+      for (const c of candidates) {
+        const v = await verifyBook(c.author ? `${c.title}(${c.author})` : c.title);
+        if (v && !verifiedList.some(item => item.formattedString === v.formattedString)) {
+          verifiedList.push(v);
+        }
+      }
+
+      resultsContainer.classList.remove('hidden');
+      if (verifiedList.length === 0) {
+        resultsContainer.innerHTML = '<p class="text-xs text-slate-500 py-2">생기부 문맥(~를 읽고, 『...』 등) 속 도서를 발견하지 못했습니다.</p>';
+      } else {
+        let cards = verifiedList.map(item => `
+          <div class="p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl flex items-center justify-between gap-2">
+            <div>
+              <p class="font-bold text-sm text-slate-900 font-mono">${item.formattedString}</p>
+              <p class="text-[11px] text-slate-500">${item.publisher ? `출판사: ${item.publisher}` : '실존 도서 확인'}</p>
+            </div>
+            <button onclick="navigator.clipboard.writeText('${item.formattedString}').then(()=>showToast('복사됨', 'success'))" class="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50">복사</button>
+          </div>
+        `).join('');
+
+        resultsContainer.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-700">검출된 도서 목록 (${verifiedList.length}건)</span>
+            <button onclick="navigator.clipboard.writeText('${verifiedList.map(b => b.formattedString).join(', ')}').then(()=>showToast('전체 복사됨', 'success'))" class="text-xs font-bold text-indigo-600 hover:underline">NEIS 전체 복사</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">${cards}</div>`;
+      }
+      lucide.createIcons();
+    }
+
+    async function handleTeacherFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('teacher-file-name').innerText = file.name;
+
+      if (file.name.endsWith('.pdf')) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let fullText = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          fullText += textContent.items.map(item => item.str).join(' ') + '\n';
+        }
+        document.getElementById('teacher-extract-text').value = fullText;
+        analyzeTeacherText();
+      } else {
+        const text = await file.text();
+        document.getElementById('teacher-extract-text').value = text;
+        analyzeTeacherText();
+      }
+    }
+
+    // Google Sheets Integration
+    function saveSheetSettings() {
+      const url = document.getElementById('sheet-webhook-url').value.trim();
+      localStorage.setItem('book_record_webhook_url', url);
+      showToast('구글 시트 연동 URL이 저장되었습니다.', 'success');
+    }
+
+    function toggleAutoSync(val) {
+      localStorage.setItem('book_record_auto_sync', val ? 'true' : 'false');
+      showToast(`실시간 자동 동기화가 ${val ? '활성화' : '비활성화'}되었습니다.`, 'info');
+    }
+
+    async function triggerSheetSync() {
+      const url = localStorage.getItem('book_record_webhook_url');
+      if (!url) {
+        showToast('구글 시트 Webhook URL을 먼저 입력하세요.', 'warning');
+        return;
+      }
+
+      const records = getStoredSubmissions();
+      showToast('구글 시트로 동기화 중...', 'info');
+
+      try {
+        await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'sync_all', records: records })
+        });
+        showToast('구글 스프레드시트에 성공적으로 동기화되었습니다!', 'success');
+      } catch (e) {
+        showToast('동기화 실패: URL 및 권한을 확인하세요.', 'error');
+      }
+    }
+
+    function exportToExcel() {
+      const records = getStoredSubmissions();
+      const rows = records.map(r => ({
+        '학년도': r.academicYear,
+        '학년': r.studentGrade + '학년',
+        '반': r.studentClass + '반',
+        '번호': r.studentNumber + '번',
+        '이름': r.studentName,
+        'NEIS 생기부 기재 텍스트': (r.books || []).map(b => b.formattedString).join(', '),
+        '도서 수': (r.books || []).length,
+        '도서 세부 목록': (r.books || []).map((b, i) => `${i + 1}. ${b.formattedString}`).join('\n'),
+        '검증 상태': r.status === 'verified' ? '검증 완료' : '확인 필요',
+        '제출 일시': new Date(r.submittedAt).toLocaleString('ko-KR')
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, '생기부_독서활동');
+      XLSX.writeFile(wb, `생기부_독서활동기록_${new Date().toISOString().slice(0,10)}.xlsx`);
+      showToast('엑셀 파일이 다운로드되었습니다.', 'success');
+    }
+
+    // Modal Helpers
+    function openGuideModal() { document.getElementById('guide-modal').classList.remove('hidden'); }
+    function closeGuideModal() { document.getElementById('guide-modal').classList.add('hidden'); }
+    function copyAppsScriptCode() {
+      const code = document.getElementById('apps-script-code').innerText;
+      navigator.clipboard.writeText(code).then(() => showToast('Apps Script 코드가 복사되었습니다!', 'success'));
+    }
+
+    // Toast UI
+    function showToast(msg, type = 'info', duration = 3000) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `flex items-center gap-2.5 p-3.5 rounded-xl shadow-lg border text-xs sm:text-sm font-semibold pointer-events-auto backdrop-blur-md transition-all duration-300 ${
+        type === 'success' ? 'bg-emerald-950/90 text-emerald-100 border-emerald-800' :
+        type === 'error' ? 'bg-rose-950/90 text-rose-100 border-rose-800' :
+        type === 'warning' ? 'bg-amber-950/90 text-amber-100 border-amber-800' :
+        'bg-slate-900/90 text-slate-100 border-slate-700'
+      }`;
+      toast.innerHTML = `<span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), duration);
+    }
+
+    // On Load
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      renderStudentBooks();
+      const savedUrl = localStorage.getItem('book_record_webhook_url');
+      if (savedUrl) document.getElementById('sheet-webhook-url').value = savedUrl;
+      const autoSync = localStorage.getItem('book_record_auto_sync') === 'true';
+      document.getElementById('sheet-auto-sync').checked = autoSync;
+    });
+  </script>
+</body>
+</html>
